@@ -399,10 +399,10 @@
       document.getElementById('other-value').textContent = `Other's Value: ${otherTotal.toLocaleString()}`;
 
       let resultText = "Result: Fair";
-      if (yourTotal > otherTotal) {
-        resultText = "Result: UNDERPAY";
-      } else if (yourTotal < otherTotal) {
-        resultText = "Result: OVERPAY";
+      if (yourTotal < otherTotal) {
+        resultText = "Result: WIN";
+      } else if (yourTotal > otherTotal) {
+        resultText = "Result: LOSE";
       }
       document.getElementById('trade-result').textContent = resultText;
     }
