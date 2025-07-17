@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steal A Brainrot Unofficial Value List</title>
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #111;
+      padding: 15px 30px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #333;
+    }
+    header h1 {
+      font-size: 20px;
+      color: #f0f0f0;
+      margin: 0;
+    }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    nav a:hover {
+      color: #9900ff;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      background: #1a1a1a;
+      min-height: calc(100vh - 70px);
+    }
+    .panel {
+      border: 2px solid #333;
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 420px;
+      background: #111;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    .brainrot-select, .traits-select, .mutation-select, input {
+      width: 100%;
+      margin-bottom: 20px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    .calc-btn, .menu-btn {
+      width: 100%;
+      padding: 10px;
+      background: #9900ff;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 5px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+    /* Trade Calculator layout */
+    .trade-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      border: 1px solid #660099;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .trade-items {
+      flex: 1;
+      max-height: 120px;
+      overflow-y: auto;
+      margin-right: 15px;
+      text-align: left;
+      border: 1px solid #333;
+      padding: 5px;
+      border-radius: 5px;
+      background: #222;
+    }
+    .trade-items div {
+      margin: 4px 0;
+      padding: 3px 6px;
+      background: #333;
+      border-radius: 3px;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .trade-items div button {
+      background: #9900ff;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-left: 8px;
+    }
+    .value-display {
+      min-width: 130px;
+      text-align: right;
+      font-weight: bold;
+      font-size: 1.1rem;
+      user-select: none;
+    }
+    .trade-result {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 1.3rem;
+    }
+    /* Modal styles */
+    #brainrot-picker {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    #brainrot-picker .picker-content {
+      background: #111;
+      margin: 40px auto;
+      padding: 20px;
+      max-width: 600px;
+      border-radius: 10px;
+      color: white;
+    }
+    #brainrot-picker h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    #brainrot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .brainrot-item {
+      background: #222;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+    .brainrot-item:hover {
+      background-color: #9900ff;
+      color: white;
+    }
+    #close-picker {
+      margin-top: 15px;
+      background: #660099;
+      border: none;
+      padding: 8px 15px;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav {
+        justify-content: center;
+        width: 100%;
+      }
+      .trade-container {
+        flex-direction: column;
+        max-width: 100%;
+      }
+      .trade-items {
+        margin-right: 0;
+        margin-bottom: 10px;
+        max-height: 150px;
+      }
+      .value-display {
+        min-width: auto;
+        text-align: center;
+      }
+    }
+  </style>
+  <script>
+    // Navigation functions
+    function showMainMenu() {
+      document.getElementById('main-menu').style.display = 'block';
+      document.getElementById('income-calculator').style.display = 'none';
+      const tradeCalc = document.getElementById('trade-calculator');
+      if (tradeCalc) tradeCalc.style.display = 'none';
+    }
+    function showIncomeCalculator() {
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('income-calculator').style.display = 'block';
+      const tradeCalc = document.getElementById('trade-calculator');
+      if (tradeCalc) tradeCalc.style.display = 'none';
+    }
+    function showTradeCalculator() {
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('income-calculator').style.display = 'none';
+      const tradeCalc = document.getElementById('trade-calculator');
+      if (tradeCalc) tradeCalc.style.display = 'block';
+    }
+
+    // Income Calculator logic
+    function calculateIncome() {
+      const baseIncome = Number(document.getElementById('brainrot').value);
+      const traitsSelect = document.getElementById('traits');
+      const selectedTraits = [...traitsSelect.selectedOptions].map(opt => Number(opt.value));
+      const mutationMultiplier = Number(document.getElementById('mutation').value);
+
+      const traitsSum = selectedTraits.reduce((sum, val) => sum + (val - 1), 0);
+      const traitsTotal = traitsSum + 1;
+      const mutationTotal = (mutationMultiplier - 1) + 1;
+      const finalMultiplier = traitsTotal + mutationTotal - 1;
+
+      const finalIncome = Math.round(baseIncome * finalMultiplier);
+      document.getElementById('result').textContent = `Result: ${finalIncome.toLocaleString()} /s`;
+    }
+
+    // Brainrot data list (name and value)
+ const brainrots = [
+  // Common Brainrots
+  { name: "Noobini Pizzanini", value: 1 },
+  { name: "Lirili Larila", value: 3 },
+  { name: "Tim Cheese", value: 5 },
+  { name: "Fluriflura", value: 7 },
+  { name: "Talpa Di Fero", value: 9 },
+  { name: "Svinina Bombardino", value: 10 },
+  { name: "Pipi Kiwi", value: 13 },
+
+  // Rare Brainrots
+  { name: "Trippi Troppi", value: 15 },
+  { name: "Tung Tung Tung Sahur", value: 25 },
+  { name: "Gangster Footera", value: 30 },
+  { name: "Boborito Bondito", value: 35 },
+  { name: "Boneca Ambalabu", value: 40 },
+  { name: "Cacto Hippopotamo", value: 50 },
+  { name: "Ta Ta Ta Ta Sahur", value: 55 },
+  { name: "Tric Trac Baraboom", value: 65 },
+
+  // Epic Brainrots
+  { name: "Cappuccino Assassino", value: 75 },
+  { name: "Brr Brr Patapim", value: 100 },
+  { name: "Trulimero Trulicina", value: 125 },
+  { name: "Bambini Crostini", value: 135 },
+  { name: "Bananita Dolphinita", value: 150 },
+  { name: "Perochello Lemonchello", value: 160 },
+  { name: "Brri Brri Bicus Dicus Bombicus", value: 175 },
+
+  // Legendary Brainrots
+  { name: "Burbaloni Loliloli", value: 200 },
+  { name: "Chimpanzini Bananini", value: 300 },
+  { name: "Ballerina Cappuccina", value: 500 },
+  { name: "Chef Crabracadabra", value: 600 },
+  { name: "Glorbo Fruttodrillo", value: 750 },
+  { name: "Blueberrinni Octopusini", value: 1000 },
+
+  // Mythic Brainrots
+  { name: "Frigo Camelo", value: 1200 },
+  { name: "Orangutini Ananassini", value: 1700 },
+  { name: "Bombardiro Crocodilo", value: 2500 },
+  { name: "Rhino Toasterino", value: 3200 },
+  { name: "Bombombini Gusini", value: 5000 },
+  { name: "Ecco Cavallo", value: 7500 },
+
+  // Brainrot God Tier
+  { name: "Cocofanto Elefanto", value: 10000 },
+  { name: "Girafa Celeste", value: 20000 },
+  { name: "Gattatino Nyanino", value: 25000 },
+  { name: "Tralalero Tralala", value: 50000 },
+  { name: "Matteo", value: 50000 },
+  { name: "Unclito Samito", value: 63000 },
+  { name: "Odin Din Din Dun", value: 75000 },
+  { name: "Trenostruzzo Turbo 3000", value: 150000 },
+
+  // Secret Brainrots
+  { name: "La Vacca Saturno Sarturnita", value: 250000 },
+  { name: "Sammyni Spyderini", value: 300000 },
+  { name: "Torrtuginni DragonFrutini", value: 350000 },
+  { name: "Los Tralaleritos", value: 500000 },
+  { name: "Las Tralaleritas", value: 500000 },
+  { name: "Graipuss Medussi", value: 1000000 },
+  { name: "Hotspot", value: 2500000 },
+  { name: "La Grande Combinazione", value: 10000000 },
+  { name: "Garama and Madung", value: 50000000 }
+];
+
+
+    let currentTradeSide = null; // 'your' or 'other'
+
+    // Open Brainrot Picker Modal for the chosen trade box
+    function openBrainrotPicker(side) {
+      currentTradeSide = side;
+      populateBrainrotGrid();
+      document.getElementById('brainrot-picker').style.display = 'block';
+    }
+
+    // Close Brainrot Picker Modal
+    function closeBrainrotPicker() {
+      document.getElementById('brainrot-picker').style.display = 'none';
+      currentTradeSide = null;
+    }
+
+    // Fill brainrot grid with clickable brainrot items
+    function populateBrainrotGrid() {
+      const grid = document.getElementById('brainrot-grid');
+      grid.innerHTML = ''; // Clear existing
+
+      brainrots.forEach(br => {
+        const div = document.createElement('div');
+        div.className = 'brainrot-item';
+        div.textContent = `${br.name} (${br.value.toLocaleString()})`;
+        div.onclick = () => {
+          addBrainrotToTrade(br);
+          closeBrainrotPicker();
+        };
+        grid.appendChild(div);
+      });
+    }
+
+    // Add brainrot to trade box
+    function addBrainrotToTrade(brainrot) {
+      const containerId = currentTradeSide === 'your' ? 'your-items' : 'other-items';
+      const container = document.getElementById(containerId);
+
+      // Create item div
+      const itemDiv = document.createElement('div');
+      itemDiv.textContent = `${brainrot.name} (${brainrot.value.toLocaleString()})`;
+
+      // Add remove button for item
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Remove';
+      removeBtn.onclick = () => {
+        container.removeChild(itemDiv);
+        updateTradeValues();
+      };
+
+      itemDiv.appendChild(removeBtn);
+
+      // Save value on the item div dataset for future reference
+      itemDiv.dataset.value = brainrot.value;
+
+      container.appendChild(itemDiv);
+
+      updateTradeValues();
+    }
+
+    // Update the total values and trade result display
+    function updateTradeValues() {
+      const yourItems = [...document.getElementById('your-items').children];
+      const otherItems = [...document.getElementById('other-items').children];
+
+      const yourTotal = yourItems.reduce((sum, el) => sum + Number(el.dataset.value || 0), 0);
+      const otherTotal = otherItems.reduce((sum, el) => sum + Number(el.dataset.value || 0), 0);
+
+      document.getElementById('your-value').textContent = `Your Value: ${yourTotal.toLocaleString()}`;
+      document.getElementById('other-value').textContent = `Other's Value: ${otherTotal.toLocaleString()}`;
+
+      let resultText = "Result: Fair";
+      if (yourTotal > otherTotal) {
+        resultText = "Result: You are winning";
+      } else if (yourTotal < otherTotal) {
+        resultText = "Result: You are losing";
+      }
+      document.getElementById('trade-result').textContent = resultText;
+    }
+
+    // Initialize main menu on page load
+    window.onload = () => {
+      showMainMenu();
+    };
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Steal A Brainrot Unofficial Value List</h1>
+    <nav>
+      <a onclick="showMainMenu()">MAIN PAGE</a>
+      <a onclick="showIncomeCalculator()">INCOME CALCULATOR</a>
+      <a onclick="showTradeCalculator()">TRADE CALCULATOR</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div id="main-menu" class="panel">
+      <h2>Hi!</h2>
+      <p>Welcome to Steal A Brainrot Unofficial Value List.</p>
+      <p>Use the buttons at the top to navigate the site.</p>
+    </div>
+
+    <div id="income-calculator" class="panel" style="display:none;">
+      <h2>Income Calculator</h2>
+      <label for="brainrot">Select Brainrot:</label>
+      <select id="brainrot" class="brainrot-select">
+<!-- Common Brainrots -->
+<option value="1">Noobini Pizzanini</option>
+<option value="3">Lirili Larila</option>
+<option value="5">Tim Cheese</option>
+<option value="7">Fluriflura</option>
+<option value="9">Talpa Di Fero</option>
+<option value="10">Svinina Bombardino</option>
+<option value="13">Pipi Kiwi</option>
+
+<!-- Rare Brainrots -->
+<option value="15">Trippi Troppi</option>
+<option value="25">Tung Tung Tung Sahur</option>
+<option value="30">Gangster Footera</option>
+<option value="35">Boborito Bondito</option>
+<option value="40">Boneca Ambalabu</option>
+<option value="50">Cacto Hippopotamo</option>
+<option value="55">Ta Ta Ta Ta Sahur</option>
+<option value="65">Tric Trac Baraboom</option>
+
+<!-- Epic Brainrots -->
+<option value="75">Cappuccino Assassino</option>
+<option value="100">Brr Brr Patapim</option>
+<option value="125">Trulimero Trulicina</option>
+<option value="135">Bambini Crostini</option>
+<option value="150">Bananita Dolphinita</option>
+<option value="160">Perochello Lemonchello</option>
+<option value="175">Brri Brri Bicus Dicus Bombicus</option>
+
+<!-- Legendary Brainrots -->
+<option value="200">Burbaloni Loliloli</option>
+<option value="300">Chimpanzini Bananini</option>
+<option value="500">Ballerina Cappuccina</option>
+<option value="600">Chef Crabracadabra</option>
+<option value="750">Glorbo Fruttodrillo</option>
+<option value="1000">Blueberrinni Octopusini</option>
+
+<!-- Mythic Brainrots -->
+<option value="1200">Frigo Camelo</option>
+<option value="1700">Orangutini Ananassini</option>
+<option value="2500">Bombardiro Crocodilo</option>
+<option value="3200">Rhino Toasterino</option>
+<option value="5000">Bombombini Gusini</option>
+<option value="7500">Ecco Cavallo</option>
+
+<!-- Brainrot God Tier -->
+<option value="10000">Cocofanto Elefanto</option>
+<option value="20000">Girafa Celeste</option>
+<option value="25000">Gattatino Nyanino</option>
+<option value="50000">Tralalero Tralala</option>
+<option value="50000">Matteo</option>
+<option value="63000">Unclito Samito</option>
+<option value="75000">Odin Din Din Dun</option>
+<option value="150000">Trenostruzzo Turbo 3000</option>
+
+<!-- Secret Brainrots -->
+<option value="250000">La Vacca Saturno Sarturnita</option>
+<option value="300000">Sammyni Spyderini</option>
+<option value="350000">Torrtuginni DragonFrutini</option>
+<option value="500000">Los Tralaleritos</option>
+<option value="500000">Las Tralaleritas</option>
+<option value="1000000">Graipuss Medussi</option>
+<option value="2500000">Hotspot</option>
+<option value="10000000">La Grande Combinazione</option>
+<option value="50000000">Garama and Madung</option>
+      </select>
+
+      <label for="traits">Select Traits:</label>
+      <select id="traits" class="traits-select" multiple size="6">
+        <option value="1">None</option>
+        <option value="3">Taco</option>
+        <option value="6">Firework</option>
+        <option value="6">Nyan</option>
+        <option value="5">Zombie</option>
+        <option value="4">Asteroid</option>
+      </select>
+
+      <label for="mutation">Select Mutation:</label>
+      <select id="mutation" class="mutation-select">
+        <option value="1">None</option>
+        <option value="10">Rainbow</option>
+        <option value="4">Candy</option>
+        <option value="2">Bloodrot</option>
+        <option value="1.5">Diamond</option>
+        <option value="1.25">Gold</option>
+      </select>
+
+      <button class="calc-btn" onclick="calculateIncome()">Calculate</button>
+      <div class="result" id="result">Result: 0 /s</div>
+    </div>
+
+    <div id="trade-calculator" class="panel" style="display:none;">
+      <h2>Trade Calculator</h2>
+
+      <div class="trade-container">
+        <div>
+          <strong>Your Trade</strong>
+          <div id="your-items" class="trade-items"></div>
+          <button class="calc-btn" onclick="openBrainrotPicker('your')">Add Brainrot</button>
+        </div>
+        <div class="value-display" id="your-value">Your Value: 0</div>
+      </div>
+
+      <div class="trade-container">
+        <div>
+          <strong>Other's Trade</strong>
+          <div id="other-items" class="trade-items"></div>
+          <button class="calc-btn" onclick="openBrainrotPicker('other')">Add Brainrot</button>
+        </div>
+        <div class="value-display" id="other-value">Other's Value: 0</div>
+      </div>
+
+      <div class="trade-result" id="trade-result">Result: Fair</div>
+    </div>
+  </div>
+
+  <!-- Brainrot Picker Modal -->
+  <div id="brainrot-picker">
+    <div class="picker-content">
+      <h3>Select a Brainrot</h3>
+      <div id="brainrot-grid"></div>
+      <button id="close-picker" onclick="closeBrainrotPicker()">Close</button>
+    </div>
+  </div>
+</body>
+</html>
