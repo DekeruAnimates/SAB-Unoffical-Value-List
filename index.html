@@ -49,15 +49,18 @@
       background: #1a1a1a;
       min-height: calc(100vh - 70px);
     }
-    .panel {
-      border: 2px solid #333;
-      border-radius: 10px;
-      padding: 20px;
-      width: 100%;
-      max-width: 420px;
-      background: #111;
-      text-align: center;
-    }
+.panel {
+  border: 1px solid #660099;
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  background: #1a1a1a;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
     h2 {
       margin-bottom: 20px;
     }
@@ -158,10 +161,14 @@
       max-width: 600px;
       border-radius: 10px;
       color: white;
+      position: relative;
     }
     #brainrot-picker h3 {
       margin-top: 0;
       margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     #brainrot-grid {
       display: grid;
@@ -177,10 +184,21 @@
       cursor: pointer;
       user-select: none;
       transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .brainrot-item:hover {
       background-color: #9900ff;
       color: white;
+    }
+    .brainrot-image {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      object-fit: cover;
+      background: #333;
+      flex-shrink: 0;
     }
     #close-picker {
       margin-top: 15px;
@@ -191,6 +209,16 @@
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
+    }
+    #brainrot-search {
+      flex-grow: 1;
+      padding: 8px 12px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1rem;
+      margin-left: 15px;
+      background: #222;
+      color: white;
     }
     @media (max-width: 600px) {
       header {
@@ -241,7 +269,21 @@
     function calculateIncome() {
       const baseIncome = Number(document.getElementById('brainrot').value);
       const traitsSelect = document.getElementById('traits');
-      const selectedTraits = [...traitsSelect.selectedOptions].map(opt => Number(opt.value));
+      let selectedTraits = [...traitsSelect.selectedOptions].map(opt => Number(opt.value));
+      // If 'None' is selected, ignore other traits
+      if (selectedTraits.includes(1)) {
+        selectedTraits = [1];
+        // Deselect others except None
+        for (let opt of traitsSelect.options) {
+          if (opt.value !== '1') opt.selected = false;
+          else opt.selected = true;
+        }
+      } else {
+        // Deselect None if other traits selected
+        for (let opt of traitsSelect.options) {
+          if (opt.value === '1') opt.selected = false;
+        }
+      }
       const mutationMultiplier = Number(document.getElementById('mutation').value);
 
       const traitsSum = selectedTraits.reduce((sum, val) => sum + (val - 1), 0);
@@ -253,85 +295,74 @@
       document.getElementById('result').textContent = `Result: ${finalIncome.toLocaleString()} /s`;
     }
 
-    // Brainrot data list (name and value)
- const brainrots = [
-  // Common Brainrots
-  { name: "Noobini Pizzanini", value: 1 },
-  { name: "Lirili Larila", value: 3 },
-  { name: "Tim Cheese", value: 5 },
-  { name: "Fluriflura", value: 7 },
-  { name: "Talpa Di Fero", value: 9 },
-  { name: "Svinina Bombardino", value: 10 },
-  { name: "Pipi Kiwi", value: 13 },
+    // Brainrot data list (name, value, and placeholder image URLs added)
+    const brainrots = [
+      // Example placeholder images, replace URLs with actual images
+      { name: "Noobini Pizzanini", value: 1, image: "Icons/NoobPizza.png" },
+      { name: "Lirili Larila", value: 3, image: "https://via.placeholder.com/40?text=Lirili" },
+      { name: "Tim Cheese", value: 5, image: "https://via.placeholder.com/40?text=Tim" },
+      { name: "Fluriflura", value: 7, image: "https://via.placeholder.com/40?text=Fluri" },
+      { name: "Talpa Di Fero", value: 9, image: "https://via.placeholder.com/40?text=Talpa" },
+      { name: "Svinina Bombardino", value: 10, image: "https://via.placeholder.com/40?text=Svinina" },
+      { name: "Pipi Kiwi", value: 13, image: "https://via.placeholder.com/40?text=Pipi" },
 
-  // Rare Brainrots
-  { name: "Trippi Troppi", value: 15 },
-  { name: "Tung Tung Tung Sahur", value: 25 },
-  { name: "Gangster Footera", value: 30 },
-  { name: "Boborito Bondito", value: 35 },
-  { name: "Boneca Ambalabu", value: 40 },
-  { name: "Cacto Hippopotamo", value: 50 },
-  { name: "Ta Ta Ta Ta Sahur", value: 55 },
-  { name: "Tric Trac Baraboom", value: 65 },
+      { name: "Trippi Troppi", value: 15, image: "https://via.placeholder.com/40?text=Trippi" },
+      { name: "Tung Tung Tung Sahur", value: 25, image: "https://via.placeholder.com/40?text=Tung" },
+      { name: "Gangster Footera", value: 30, image: "https://via.placeholder.com/40?text=Gangster" },
+      { name: "Boborito Bondito", value: 35, image: "https://via.placeholder.com/40?text=Boborito" },
+      { name: "Boneca Ambalabu", value: 40, image: "https://via.placeholder.com/40?text=Boneca" },
+      { name: "Cacto Hippopotamo", value: 50, image: "https://via.placeholder.com/40?text=Cacto" },
+      { name: "Ta Ta Ta Ta Sahur", value: 55, image: "https://via.placeholder.com/40?text=TaTa" },
+      { name: "Tric Trac Baraboom", value: 65, image: "https://via.placeholder.com/40?text=Tric" },
 
-  // Epic Brainrots
-  { name: "Cappuccino Assassino", value: 75 },
-  { name: "Brr Brr Patapim", value: 100 },
-  { name: "Trulimero Trulicina", value: 125 },
-  { name: "Bambini Crostini", value: 135 },
-  { name: "Bananita Dolphinita", value: 150 },
-  { name: "Perochello Lemonchello", value: 160 },
-  { name: "Brri Brri Bicus Dicus Bombicus", value: 175 },
+      { name: "Cappuccino Assassino", value: 75, image: "https://via.placeholder.com/40?text=Cappuccino" },
+      { name: "Brr Brr Patapim", value: 100, image: "https://via.placeholder.com/40?text=Brr" },
+      { name: "Trulimero Trulicina", value: 125, image: "https://via.placeholder.com/40?text=Trulimero" },
+      { name: "Bambini Crostini", value: 135, image: "https://via.placeholder.com/40?text=Bambini" },
+      { name: "Bananita Dolphinita", value: 150, image: "https://via.placeholder.com/40?text=Bananita" },
+      { name: "Perochello Lemonchello", value: 160, image: "https://via.placeholder.com/40?text=Perochello" },
+      { name: "Brri Brri Bicus Dicus Bombicus", value: 175, image: "https://via.placeholder.com/40?text=Brri" },
 
-  // Legendary Brainrots
-  { name: "Burbaloni Loliloli", value: 200 },
-  { name: "Chimpanzini Bananini", value: 300 },
-  { name: "Ballerina Cappuccina", value: 500 },
-  { name: "Chef Crabracadabra", value: 600 },
-  { name: "Lionel Cactuseli", value: 650 },
-  { name: "Glorbo Fruttodrillo", value: 750 },
-  { name: "Blueberrinni Octopusini", value: 1000 },
-  { name: "Pandacini Banananini", value: 1200 },
+      { name: "Burbaloni Loliloli", value: 200, image: "https://via.placeholder.com/40?text=Burbaloni" },
+      { name: "Chimpanzini Bananini", value: 300, image: "https://via.placeholder.com/40?text=Chimpanzini" },
+      { name: "Ballerina Cappuccina", value: 500, image: "https://via.placeholder.com/40?text=Ballerina" },
+      { name: "Chef Crabracadabra", value: 600, image: "https://via.placeholder.com/40?text=Chef" },
+      { name: "Glorbo Fruttodrillo", value: 750, image: "https://via.placeholder.com/40?text=Glorbo" },
+      { name: "Blueberrinni Octopusini", value: 1000, image: "https://via.placeholder.com/40?text=Blueberrinni" },
 
-  // Mythic Brainrots
-  { name: "Frigo Camelo", value: 1200 },
-  { name: "Orangutini Ananassini", value: 1700 },
-  { name: "Bombardiro Crocodilo", value: 2500 },
-  { name: "Spioniro Golubiro", value: 3500 },
-  { name: "Zibra Zubra Zibralini", value: 6000 },
-  { name: "Tigrilini Watermelini", value: 7500 },
-  { name: "Rhino Toasterino", value: 3200 },
-  { name: "Bombombini Gusini", value: 5000 },
-  { name: "Cavallo Virtuoso", value: 7500 },
+      { name: "Frigo Camelo", value: 1200, image: "https://via.placeholder.com/40?text=Frigo" },
+      { name: "Orangutini Ananassini", value: 1700, image: "https://via.placeholder.com/40?text=Orangutini" },
+      { name: "Bombardiro Crocodilo", value: 2500, image: "https://via.placeholder.com/40?text=Bombardiro" },
+      { name: "Rhino Toasterino", value: 3200, image: "https://via.placeholder.com/40?text=Rhino" },
+      { name: "Bombombini Gusini", value: 5000, image: "https://via.placeholder.com/40?text=Bombombini" },
+      { name: "Ecco Cavallo", value: 7500, image: "https://via.placeholder.com/40?text=Ecco" },
 
-  // Brainrot God Tier
-  { name: "Cocofanto Elefanto", value: 10000 },
-  { name: "Girafa Celeste", value: 20000 },
-  { name: "Gattatino Neonino", value: 25000 },
-  { name: "Tralalero Tralala", value: 50000 },
-  { name: "Matteo", value: 50000 },
-  { name: "Statuino Libertino", value: 63000 },
-  { name: "Odin Din Din Dun", value: 75000 },
-  { name: "Trenostruzzo Turbo 3000", value: 150000 },
+      { name: "Cocofanto Elefanto", value: 10000, image: "https://via.placeholder.com/40?text=Cocofanto" },
+      { name: "Girafa Celeste", value: 20000, image: "https://via.placeholder.com/40?text=Girafa" },
+      { name: "Gattatino Nyanino", value: 25000, image: "https://via.placeholder.com/40?text=Gattatino" },
+      { name: "Tralalero Tralala", value: 50000, image: "https://via.placeholder.com/40?text=Tralalero" },
+      { name: "Matteo", value: 50000, image: "https://via.placeholder.com/40?text=Matteo" },
+      { name: "Unclito Samito", value: 63000, image: "https://via.placeholder.com/40?text=Unclito" },
+      { name: "Odin Din Din Dun", value: 75000, image: "https://via.placeholder.com/40?text=Odin" },
+      { name: "Trenostruzzo Turbo 3000", value: 150000, image: "https://via.placeholder.com/40?text=Trenostruzzo" },
 
-  // Secret Brainrots
-  { name: "La Vacca Saturno Sarturnita", value: 250000 },
-  { name: "Chimpanzini Spiderini", value: 300000 },
-  { name: "Torrtuginni DragonFrutini", value: 350000 },
-  { name: "Los Tralaleritos", value: 500000 },
-  { name: "Las Tralaleritas", value: 650000 },
-  { name: "Graipuss Medussi", value: 1000000 },
-  { name: "Hotspot", value: 2500000 },
-  { name: "La Grande Combinazione", value: 10000000 },
-  { name: "Garama and Madung", value: 50000000 }
-];
-
+      { name: "La Vacca Saturno Sarturnita", value: 250000, image: "https://via.placeholder.com/40?text=LaVacca" },
+      { name: "Sammyni Spyderini", value: 300000, image: "https://via.placeholder.com/40?text=Sammyni" },
+      { name: "Torrtuginni DragonFrutini", value: 350000, image: "https://via.placeholder.com/40?text=Torrtuginni" },
+      { name: "Los Tralaleritos", value: 500000, image: "https://via.placeholder.com/40?text=Tralaleritos" },
+      { name: "Las Tralaleritas", value: 500000, image: "https://via.placeholder.com/40?text=Tralaleritas" },
+      { name: "Graipuss Medussi", value: 1000000, image: "https://via.placeholder.com/40?text=Graipuss" },
+      { name: "Hotspot", value: 2500000, image: "https://via.placeholder.com/40?text=Hotspot" },
+      { name: "La Grande Combinazione", value: 10000000, image: "https://via.placeholder.com/40?text=Grande" },
+      { name: "Garama and Madung", value: 50000000, image: "https://via.placeholder.com/40?text=Garama" }
+    ];
 
     let currentTradeSide = null; // 'your' or 'other'
 
     // Open Brainrot Picker Modal for the chosen trade box
     function openBrainrotPicker(side) {
       currentTradeSide = side;
+      document.getElementById('brainrot-search').value = '';
       populateBrainrotGrid();
       document.getElementById('brainrot-picker').style.display = 'block';
     }
@@ -342,15 +373,35 @@
       currentTradeSide = null;
     }
 
-    // Fill brainrot grid with clickable brainrot items
-    function populateBrainrotGrid() {
+    // Filter brainrots based on search input
+    function filterBrainrots() {
+      const query = document.getElementById('brainrot-search').value.toLowerCase();
       const grid = document.getElementById('brainrot-grid');
       grid.innerHTML = ''; // Clear existing
 
-      brainrots.forEach(br => {
+      const filtered = brainrots.filter(br => br.name.toLowerCase().includes(query));
+
+      if (filtered.length === 0) {
+        grid.textContent = 'No Brainrots found.';
+        return;
+      }
+
+      filtered.forEach(br => {
         const div = document.createElement('div');
         div.className = 'brainrot-item';
-        div.textContent = `${br.name} (${br.value.toLocaleString()})`;
+
+        // Add image + name + value
+        const img = document.createElement('img');
+        img.className = 'brainrot-image';
+        img.src = br.image;
+        img.alt = br.name;
+
+        const text = document.createElement('span');
+        text.textContent = `${br.name} (${br.value.toLocaleString()})`;
+
+        div.appendChild(img);
+        div.appendChild(text);
+
         div.onclick = () => {
           addBrainrotToTrade(br);
           closeBrainrotPicker();
@@ -359,52 +410,114 @@
       });
     }
 
+    // Fill brainrot grid (initial call or full list)
+function populateBrainrotGrid() {
+  const grid = document.getElementById('brainrot-grid');
+  grid.innerHTML = ''; // Clear existing
+
+  brainrots.forEach(br => {
+    const div = document.createElement('div');
+    div.className = 'brainrot-item';
+    
+    // Create image element
+    const img = document.createElement('img');
+    img.src = br.image || "https://via.placeholder.com/40?text=NoImg"; // fallback if no image
+    img.alt = br.name;
+    img.style.width = '40px';
+    img.style.height = '40px';
+    img.style.marginRight = '8px';
+    img.style.verticalAlign = 'middle';
+    
+    // Create text node
+    const text = document.createTextNode(`${br.name} (${br.value.toLocaleString()})`);
+    
+    div.appendChild(img);
+    div.appendChild(text);
+
+    div.onclick = () => {
+      addBrainrotToTrade(br);
+      closeBrainrotPicker();
+    };
+    grid.appendChild(div);
+  });
+}
+
+
     // Add brainrot to trade box
-    function addBrainrotToTrade(brainrot) {
-      const containerId = currentTradeSide === 'your' ? 'your-items' : 'other-items';
-      const container = document.getElementById(containerId);
+ function addBrainrotToTrade(brainrot) {
+  const containerId = currentTradeSide === 'your' ? 'your-items' : 'other-items';
+  const container = document.getElementById(containerId);
 
-      // Create item div
-      const itemDiv = document.createElement('div');
-      itemDiv.textContent = `${brainrot.name} (${brainrot.value.toLocaleString()})`;
+  // Check if brainrot already exists
+  const existing = [...container.children].find(el => el.dataset.name === brainrot.name);
+  if (existing) {
+    // Increase count
+    let count = parseInt(existing.dataset.count || "1");
+    count++;
+    existing.dataset.count = count;
+    existing.firstChild.textContent = `${brainrot.name} x${count}`;
+  } else {
+    // Create new item div
+    const itemDiv = document.createElement('div');
+    const labelSpan = document.createElement('span');
+    labelSpan.textContent = `${brainrot.name} x1`;
+    itemDiv.appendChild(labelSpan);
 
-      // Add remove button for item
-      const removeBtn = document.createElement('button');
-      removeBtn.textContent = '×';
-      removeBtn.title = 'Remove';
-      removeBtn.onclick = () => {
-        container.removeChild(itemDiv);
-        updateTradeValues();
-      };
-
-      itemDiv.appendChild(removeBtn);
-
-      // Save value on the item div dataset for future reference
-      itemDiv.dataset.value = brainrot.value;
-
-      container.appendChild(itemDiv);
-
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '×';
+    removeBtn.title = 'Remove';
+    removeBtn.onclick = () => {
+      container.removeChild(itemDiv);
       updateTradeValues();
-    }
+    };
+    itemDiv.appendChild(removeBtn);
+
+    itemDiv.dataset.name = brainrot.name;
+    itemDiv.dataset.count = 1;
+    itemDiv.dataset.value = brainrot.value;
+
+    container.appendChild(itemDiv);
+  }
+
+  updateTradeValues();
+}
 
     // Update the total values and trade result display
-    function updateTradeValues() {
-      const yourItems = [...document.getElementById('your-items').children];
-      const otherItems = [...document.getElementById('other-items').children];
+function updateTradeValues() {
+  const yourItems = [...document.getElementById('your-items').children];
+  const otherItems = [...document.getElementById('other-items').children];
 
-      const yourTotal = yourItems.reduce((sum, el) => sum + Number(el.dataset.value || 0), 0);
-      const otherTotal = otherItems.reduce((sum, el) => sum + Number(el.dataset.value || 0), 0);
+  const yourTotal = yourItems.reduce((sum, el) => {
+    const value = Number(el.dataset.value || 0);
+    const count = Number(el.dataset.count || 1);
+    return sum + (value * count);
+  }, 0);
 
-      document.getElementById('your-value').textContent = `Your Value: ${yourTotal.toLocaleString()}`;
-      document.getElementById('other-value').textContent = `Other's Value: ${otherTotal.toLocaleString()}`;
+  const otherTotal = otherItems.reduce((sum, el) => {
+    const value = Number(el.dataset.value || 0);
+    const count = Number(el.dataset.count || 1);
+    return sum + (value * count);
+  }, 0);
 
-      let resultText = "Result: Fair";
-      if (yourTotal < otherTotal) {
-        resultText = "Result: WIN";
-      } else if (yourTotal > otherTotal) {
-        resultText = "Result: LOSE";
-      }
-      document.getElementById('trade-result').textContent = resultText;
+  document.getElementById('your-value').textContent = `Your Value: ${yourTotal.toLocaleString()}`;
+  document.getElementById('other-value').textContent = `Other's Value: ${otherTotal.toLocaleString()}`;
+
+  let resultText = "Result: Fair";
+  if (yourTotal < otherTotal) {
+    resultText = "Result: WIN";
+  } else if (yourTotal > otherTotal) {
+    resultText = "Result: LOSE";
+  }
+  document.getElementById('trade-result').textContent = resultText;
+}
+
+    // Clear trade items for a side
+    function clearTrade(side) {
+      const containerId = side === 'your' ? 'your-items' : 'other-items';
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      updateTradeValues();
     }
 
     // Initialize main menu on page load
@@ -425,7 +538,7 @@
 
   <div class="container">
     <div id="main-menu" class="panel">
-      <h2>Hello There!</h2>
+      <h2>Hi!</h2>
       <p>Welcome to Steal A Brainrot Unofficial Value List.</p>
       <p>Use the buttons at the top to navigate the site.</p>
     </div>
@@ -434,81 +547,75 @@
       <h2>Income Calculator</h2>
       <label for="brainrot">Select Brainrot:</label>
       <select id="brainrot" class="brainrot-select">
-<!-- Common Brainrots -->
-<option value="1">Noobini Pizzanini</option>
-<option value="3">Lirili Larila</option>
-<option value="5">Tim Cheese</option>
-<option value="7">Fluriflura</option>
-<option value="9">Talpa Di Fero</option>
-<option value="10">Svinina Bombardino</option>
-<option value="13">Pipi Kiwi</option>
+        <!-- Common Brainrots -->
+        <option value="1">Noobini Pizzanini</option>
+        <option value="3">Lirili Larila</option>
+        <option value="5">Tim Cheese</option>
+        <option value="7">Fluriflura</option>
+        <option value="9">Talpa Di Fero</option>
+        <option value="10">Svinina Bombardino</option>
+        <option value="13">Pipi Kiwi</option>
 
-<!-- Rare Brainrots -->
-<option value="15">Trippi Troppi</option>
-<option value="25">Tung Tung Tung Sahur</option>
-<option value="30">Gangster Footera</option>
-<option value="35">Boborito Bondito</option>
-<option value="40">Boneca Ambalabu</option>
-<option value="50">Cacto Hippopotamo</option>
-<option value="55">Ta Ta Ta Ta Sahur</option>
-<option value="65">Tric Trac Baraboom</option>
+        <!-- Rare Brainrots -->
+        <option value="15">Trippi Troppi</option>
+        <option value="25">Tung Tung Tung Sahur</option>
+        <option value="30">Gangster Footera</option>
+        <option value="35">Boborito Bondito</option>
+        <option value="40">Boneca Ambalabu</option>
+        <option value="50">Cacto Hippopotamo</option>
+        <option value="55">Ta Ta Ta Ta Sahur</option>
+        <option value="65">Tric Trac Baraboom</option>
 
-<!-- Epic Brainrots -->
-<option value="75">Cappuccino Assassino</option>
-<option value="100">Brr Brr Patapim</option>
-<option value="125">Trulimero Trulicina</option>
-<option value="135">Bambini Crostini</option>
-<option value="150">Bananita Dolphinita</option>
-<option value="160">Perochello Lemonchello</option>
-<option value="175">Brri Brri Bicus Dicus Bombicus</option>
+        <!-- Epic Brainrots -->
+        <option value="75">Cappuccino Assassino</option>
+        <option value="100">Brr Brr Patapim</option>
+        <option value="125">Trulimero Trulicina</option>
+        <option value="135">Bambini Crostini</option>
+        <option value="150">Bananita Dolphinita</option>
+        <option value="160">Perochello Lemonchello</option>
+        <option value="175">Brri Brri Bicus Dicus Bombicus</option>
 
-<!-- Legendary Brainrots -->
-<option value="200">Burbaloni Loliloli</option>
-<option value="300">Chimpanzini Bananini</option>
-<option value="500">Ballerina Cappuccina</option>
-<option value="600">Chef Crabracadabra</option>
-<option value="650">Lionel Cactusell</option>
-<option value="750">Glorbo Fruttodrillo</option>
-<option value="1000">Blueberrinni Octopusini</option>
-<option value="1200">Pandaccuni Bananini</option>
+        <!-- Legendary Brainrots -->
+        <option value="200">Burbaloni Loliloli</option>
+        <option value="300">Chimpanzini Bananini</option>
+        <option value="500">Ballerina Cappuccina</option>
+        <option value="600">Chef Crabracadabra</option>
+        <option value="750">Glorbo Fruttodrillo</option>
+        <option value="1000">Blueberrinni Octopusini</option>
 
-<!-- Mythic Brainrots -->
-<option value="1200">Frigo Camelo</option>
-<option value="1700">Orangutini Ananassini</option>
-<option value="2500">Bombardiro Crocodilo</option>
-<option value="3200">Rhino Toasterino</option>
-<option value="5000">Bombombini Gusini</option>
-<option value="3500">Spioniro Golubiro</option>
-<option value="6000">Zibra Zubra Zibralini</option>
-<option value="7500">Tigrilini Watermelini</option>
-<option value="7500">Cavallo Virtuoso</option>
+        <!-- Mythic Brainrots -->
+        <option value="1200">Frigo Camelo</option>
+        <option value="1700">Orangutini Ananassini</option>
+        <option value="2500">Bombardiro Crocodilo</option>
+        <option value="3200">Rhino Toasterino</option>
+        <option value="5000">Bombombini Gusini</option>
+        <option value="7500">Ecco Cavallo</option>
 
-<!-- Brainrot God Tier -->
-<option value="10000">Cocofanto Elefanto</option>
-<option value="20000">Girafa Celeste</option>
-<option value="25000">Gattatino Neonino</option>
-<option value="50000">Tralalero Tralala</option>
-<option value="50000">Matteo</option>
-<option value="63000">Statuino Libertino</option>
-<option value="75000">Odin Din Din Dun</option>
-<option value="150000">Trenostruzzo Turbo 3000</option>
+        <!-- Brainrot God Tier -->
+        <option value="10000">Cocofanto Elefanto</option>
+        <option value="20000">Girafa Celeste</option>
+        <option value="25000">Gattatino Nyanino</option>
+        <option value="50000">Tralalero Tralala</option>
+        <option value="50000">Matteo</option>
+        <option value="63000">Unclito Samito</option>
+        <option value="75000">Odin Din Din Dun</option>
+        <option value="150000">Trenostruzzo Turbo 3000</option>
 
-<!-- Secret Brainrots -->
-<option value="250000">La Vacca Saturno Sarturnita</option>
-<option value="300000">Chimpanzini Spiderini</option>
-<option value="350000">Torrtuginni DragonFrutini</option>
-<option value="500000">Los Tralaleritos</option>
-<option value="650000">Las Tralaleritas</option>
-<option value="1000000">Graipuss Medussi</option>
-<option value="2500000">Pot Hotspot</option>
-<option value="10000000">La Grande Combinazione</option>
-<option value="50000000">Garama and Madung</option>
+        <!-- Secret Brainrots -->
+        <option value="250000">La Vacca Saturno Sarturnita</option>
+        <option value="300000">Sammyni Spyderini</option>
+        <option value="350000">Torrtuginni DragonFrutini</option>
+        <option value="500000">Los Tralaleritos</option>
+        <option value="500000">Las Tralaleritas</option>
+        <option value="1000000">Graipuss Medussi</option>
+        <option value="2500000">Hotspot</option>
+        <option value="10000000">La Grande Combinazione</option>
+        <option value="50000000">Garama and Madung</option>
       </select>
 
       <label for="traits">Select Traits:</label>
-      <select id="traits" class="traits-select" multiple size="6">
+      <select id="traits" class="traits-select" multiple size="6" onchange="calculateIncome()">
         <option value="1">None</option>
-	<option value="1.4">Crab</option>
         <option value="3">Taco</option>
         <option value="6">Firework</option>
         <option value="6">Nyan</option>
@@ -517,7 +624,7 @@
       </select>
 
       <label for="mutation">Select Mutation:</label>
-      <select id="mutation" class="mutation-select">
+      <select id="mutation" class="mutation-select" onchange="calculateIncome()">
         <option value="1">None</option>
         <option value="10">Rainbow</option>
         <option value="4">Candy</option>
@@ -534,19 +641,21 @@
       <h2>Trade Calculator</h2>
 
       <div class="trade-container">
-        <div>
+        <div style="flex:1;">
           <strong>Your Trade</strong>
           <div id="your-items" class="trade-items"></div>
           <button class="calc-btn" onclick="openBrainrotPicker('your')">Add Brainrot</button>
+          <button class="calc-btn" style="margin-top:5px; background:#660099;" onclick="clearTrade('your')">Clear Your Trade</button>
         </div>
         <div class="value-display" id="your-value">Your Value: 0</div>
       </div>
 
       <div class="trade-container">
-        <div>
+        <div style="flex:1;">
           <strong>Other's Trade</strong>
           <div id="other-items" class="trade-items"></div>
           <button class="calc-btn" onclick="openBrainrotPicker('other')">Add Brainrot</button>
+          <button class="calc-btn" style="margin-top:5px; background:#660099;" onclick="clearTrade('other')">Clear Other's Trade</button>
         </div>
         <div class="value-display" id="other-value">Other's Value: 0</div>
       </div>
@@ -559,6 +668,7 @@
   <div id="brainrot-picker">
     <div class="picker-content">
       <h3>Select a Brainrot</h3>
+      <input type="text" id="brainrot-search" placeholder="Search Brainrots..." oninput="filterBrainrots()" style="width: 100%; margin-bottom: 10px; padding: 8px; border-radius: 5px; border: none;">
       <div id="brainrot-grid"></div>
       <button id="close-picker" onclick="closeBrainrotPicker()">Close</button>
     </div>
